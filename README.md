@@ -10,5 +10,5 @@ Se pretende mostrar una librería digital donde se tengan diferentes flujos:
 - Mis libros -> Libros guardados -> Detalle
 
 # INTEGRANTES
-Hernández Hernández Abigail
-Uribe Rivera Irene Jolette
+- Hernández Hernández Abigail
+- Uribe Rivera Irene Jolette
