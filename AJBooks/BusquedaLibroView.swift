@@ -48,4 +48,5 @@ struct BusquedaLibroView: View {
 
 #Preview {
     BusquedaLibroView()
+    
 }

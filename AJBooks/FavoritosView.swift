@@ -13,6 +13,8 @@ struct FavoritosView: View {
             Color.cyan
                 .ignoresSafeArea()
             
+            
+            
             VStack() {
                 Text("Favorites")
                     .font(.largeTitle)
@@ -34,6 +36,7 @@ struct FavoritosView: View {
     }
 }
 
-#Preview {
+#Preview
+{
     FavoritosView()
 }
