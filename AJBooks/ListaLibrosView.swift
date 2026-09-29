@@ -10,7 +10,10 @@ import SwiftUI
 
 struct ListaLibrosView: View {
     var body: some View {
+        
         ZStack {
+            
+            
             Color.cyan
                 .ignoresSafeArea()
             
