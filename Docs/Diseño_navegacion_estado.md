@@ -141,27 +141,6 @@ En cualquiera de las pantallas principales, al presionar sobre la tarjeta de un 
 
 Se utiliza el modificador `.sheet(item:)` asociado al estado del libro. Cuando la variable `$selectedBook` deja de ser `nil`, SwiftUI presenta la vista de forma automática.
 
----
 
-## Accesibilidad
-
-**Botón Corazón (Favorito):**
-
-```swift
-.accessibilityLabel(isFavorite ? "Eliminar de favoritos" : "Agregar a favoritos")
-.accessibilityHint("Guarda este libro en tu lista personalizada.")
-```
-
-**Botón Cierre Modal (X):**
-
-```swift
-.accessibilityLabel("Cerrar detalles")
-.accessibilityHint("Regresa a la pantalla anterior.")
-```
-
-**Botón Eliminar (Bote de basura):**
-
-```swift
-.accessibilityLabel("Eliminar \(book.title)")
 .accessibilityHint("Quita este libro de tu lista de favoritos.")
 ```
