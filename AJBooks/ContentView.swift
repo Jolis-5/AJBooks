@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     
+    
     @State var text :String = ""
     let test: Bool = false
     var body: some View {
@@ -23,6 +24,8 @@ struct ContentView: View {
                     .font(.system(size: 40))
                     .padding()
                     .fontDesign(.rounded)
+                
+                
                 
                 Text("AJBooks")
                     .font(.system(size: 60))

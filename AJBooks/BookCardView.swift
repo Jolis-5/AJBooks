@@ -13,7 +13,7 @@ struct BookCardView: View {
     
     var body: some View {
         VStack {
-           
+            
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.gray.opacity(0.3))
@@ -38,8 +38,10 @@ struct BookCardView: View {
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .padding(.horizontal)
         .accessibilityElement(children: .combine)
-                .accessibilityLabel("Libro: \(title), \(author)")
-            
+        .accessibilityLabel("Libro: \(title), \(author)")
+        
     }
+    
+    
 }
 
