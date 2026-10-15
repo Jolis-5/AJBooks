@@ -10,12 +10,16 @@ import SwiftData
 
 @main
 struct AJBooksApp: App {
+    @State private var favoritos = FavoritosStore()
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
+        
+        
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
@@ -25,7 +29,8 @@ struct AJBooksApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
+                .environment(favoritos)
         }
         .modelContainer(sharedModelContainer)
     }

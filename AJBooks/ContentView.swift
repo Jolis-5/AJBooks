@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     
+    let onEnter: () -> Void
     
     @State var text :String = ""
     let test: Bool = false
@@ -34,10 +35,10 @@ struct ContentView: View {
                 
                 
                 Button {
-                    
+                    onEnter()
                 } label :{
                     Text ("Entrar")
-                        .padding() //espaciado (horizontal,vertical,etc,etc..
+                        .padding() 
                         .font(.title)
                         .bold()
                         .fontDesign(.serif)
@@ -56,5 +57,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    ContentView(onEnter: {})
 }
