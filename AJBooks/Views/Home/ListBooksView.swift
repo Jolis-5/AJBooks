@@ -10,36 +10,33 @@ import SwiftUI
 
 struct ListaLibrosView: View {
     var body: some View {
-        
+
         ZStack {
-            
-            
+
             Color.cyan
                 .ignoresSafeArea()
-            
-            
-            
-            
+
             VStack {
                 Text("Lista de libros")
                     .font(.system(size: 40))
                     .padding()
                     .fontDesign(.serif)
-                
-                
-               
+
                 ScrollView {
                     VStack(spacing: 16) {
-                        BookCardView(title: "Título del libro 1", author: "Descripción breve..")
-                        BookCardView(title: "Título del libro 2", author: "Descripción breve..")
-                        BookCardView(title: "Título del libro 3", author: "Descripción breve..")
-                }
+                        ForEach(Libro.ejemplos) { libro in
+                            TarjetaLibroView(libro: libro)
+                        }
+                    }
+                
                 }
             }
         }
+        
     }
 }
 
 #Preview {
     ListaLibrosView()
+        .environment(FavoritosStore())
 }
