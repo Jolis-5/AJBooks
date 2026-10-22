@@ -10,6 +10,7 @@ import SwiftUI
 struct FavoritosView: View {
 
     @Environment(FavoritosStore.self) private var favoritos
+    @State private var libroSeleccionado: Libro?
 
     var body: some View {
 
@@ -41,15 +42,23 @@ struct FavoritosView: View {
                         VStack(spacing: 16) {
                             ForEach(favoritos.libros) { libro in
                                 TarjetaLibroView(libro: libro)
+                                    .onTapGesture {
+                                        libroSeleccionado = libro
+                                    }
+                                    .accessibilityAddTraits(.isButton)
                             }
                         }
                     }
-                    
                 }
+                
+                
+                
             }
-            
         }
         .animation(.default, value: favoritos.libros)
+        .sheet(item: $libroSeleccionado) { libro in
+            BookDetailView(libro: libro)
+        }
     }
 }
 

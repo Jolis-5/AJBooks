@@ -4,7 +4,6 @@
 //
 //  Created by Jolette Rivera on 11/10/26.
 //
-
 import SwiftUI
 
 enum CategoriaLibro: String, CaseIterable, Identifiable {
@@ -26,6 +25,7 @@ private struct LibroDemo: Identifiable {
 struct FiltroCategoriaView: View {
 
     @State private var categoriaSeleccionada: CategoriaLibro? = nil
+    @State private var libroSeleccionado: Libro?   // 1. estado del detalle
 
     private let libros: [LibroDemo] = [
         LibroDemo(title: "La Odisea", author: "Homero", categoria: .clasicos),
@@ -72,6 +72,16 @@ struct FiltroCategoriaView: View {
                     VStack(spacing: 16) {
                         ForEach(librosFiltrados) { libro in
                             BookCardView(title: libro.title, author: libro.author)
+                                // 2. toque en la tarjeta
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    libroSeleccionado = Libro(
+                                        id: libro.id.uuidString,
+                                        title: libro.title,
+                                        author: libro.author
+                                    )
+                                }
+                                .accessibilityAddTraits(.isButton)
                         }
                     }
                     .padding(.top)
@@ -79,6 +89,10 @@ struct FiltroCategoriaView: View {
             }
         }
         .animation(.default, value: categoriaSeleccionada)
+        // 3. hoja de detalle
+        .sheet(item: $libroSeleccionado) { libro in
+            BookDetailView(libro: libro)
+        }
     }
 
     private func chip(titulo: String, seleccionado: Bool, action: @escaping () -> Void) -> some View {
