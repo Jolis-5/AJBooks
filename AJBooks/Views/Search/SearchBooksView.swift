@@ -1,5 +1,5 @@
 //
-//  BusquedaLibroView.swift
+//  BookSearchView.swift
 //  AJBooks
 //
 //  Created by Jolette Rivera on 26/09/26.
@@ -8,21 +8,21 @@
 
 import SwiftUI
 
-struct BusquedaLibroView: View {
+struct BookSearchView: View {
     @State private var searchText: String = ""
-    @State private var libroSeleccionado: Libro?
+    @State private var selectedBook: Book?
 
-    private var resultados: [Libro] {
-        let busqueda = searchText.trimmingCharacters(in: .whitespaces)
-        guard !busqueda.isEmpty else { return Libro.ejemplos }
-        return Libro.ejemplos.filter {
-            $0.title.localizedCaseInsensitiveContains(busqueda) ||
-            $0.author.localizedCaseInsensitiveContains(busqueda)
+    private var results: [Book] {
+        let query = searchText.trimmingCharacters(in: .whitespaces)
+        guard !query.isEmpty else { return Book.examples }
+        return Book.examples.filter {
+            $0.title.localizedCaseInsensitiveContains(query) ||
+            $0.author.localizedCaseInsensitiveContains(query)
         }
     }
 
-    private var textoResultados: String {
-        resultados.count == 1 ? "1 resultado" : "\(resultados.count) resultados"
+    private var resultsText: String {
+        results.count == 1 ? "1 resultado" : "\(results.count) resultados"
     }
 
     var body: some View {
@@ -54,23 +54,23 @@ struct BusquedaLibroView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .padding()
 
-                Text(textoResultados)
+                Text(resultsText)
                     .font(.caption)
                     .foregroundStyle(.gray)
                     .padding(.horizontal)
 
                 ScrollView {
                     VStack(spacing: 16) {
-                        ForEach(resultados) { libro in
-                            TarjetaLibroView(libro: libro)
+                        ForEach(results) { book in
+                            BookCardFavoritesView(book: book)
                                 .contentShape(Rectangle())
                                 .onTapGesture {
-                                    libroSeleccionado = libro
+                                    selectedBook = book
                                 }
                                 .accessibilityAddTraits(.isButton)
                                 .accessibilityHint("Abre el detalle del libro")
                         }
-                        if resultados.isEmpty {
+                        if results.isEmpty {
                             Text("No se encontraron libros")
                                 .foregroundStyle(.gray)
                                 .padding(.top, 40)
@@ -80,12 +80,12 @@ struct BusquedaLibroView: View {
             }
             .padding()
         }
-        .sheet(item: $libroSeleccionado) { libro in
-            BookDetailView(libro: libro)
+        .sheet(item: $selectedBook) { book in
+            BookDetailView(book: book)
         }
     }
 }
 
 #Preview {
-    BusquedaLibroView()
+    BookSearchView()
 }

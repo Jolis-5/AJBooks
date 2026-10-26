@@ -8,31 +8,31 @@
 import SwiftUI
 
 enum AppTab: Hashable {
-    case inicio, buscar, favoritos, filtro
+    case home, search, favorites, filter
 }
 
 struct MainTabView: View {
-    @State private var selectedTab: AppTab = .inicio
+    @State private var selectedTab: AppTab = .home
     
     
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            ListaLibrosView()
+            BookListView()
                 .tabItem { Label("Inicio", systemImage: "books.vertical") }
-                .tag(AppTab.inicio)
+                .tag(AppTab.home)
 
-            BusquedaLibroView()
+            BookSearchView()
                 .tabItem { Label("Search", systemImage: "magnifyingglass") }
-                .tag(AppTab.buscar)
+                .tag(AppTab.search)
 
-            FavoritosView()
+            FavoritesView()
                 .tabItem { Label("Saved", systemImage: "heart") }
-                .tag(AppTab.favoritos)
+                .tag(AppTab.favorites)
 
-            FiltroCategoriaView()
+            CategoryFilterView()
                 .tabItem { Label("Filter", systemImage: "slider.horizontal.3") }
-                .tag(AppTab.filtro)
+                .tag(AppTab.filter)
         }
         .tint(.pink)
     }

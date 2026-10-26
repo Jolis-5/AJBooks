@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct BookDetailView: View {
-    let libro: Libro
+    let book: Book
 
     @Environment(\.dismiss) private var dismiss
 
@@ -31,13 +31,13 @@ struct BookDetailView: View {
                             .accessibilityHidden(true)
                     }
 
-                    Text(libro.title)
+                    Text(book.title)
                         .font(.title)
                         .bold()
                         .fontDesign(.serif)
                         .multilineTextAlignment(.center)
 
-                    Text(libro.author)
+                    Text(book.author)
                         .font(.title3)
                         .foregroundStyle(.secondary)
 
@@ -59,5 +59,5 @@ struct BookDetailView: View {
 }
 
 #Preview {
-    BookDetailView(libro: Libro.ejemplos[0])
+    BookDetailView(book: Book.examples[0])
 }
