@@ -38,7 +38,7 @@ struct ContentView: View {
                     onEnter()
                 } label :{
                     Text ("Entrar")
-                        .padding() 
+                        .padding()
                         .font(.title)
                         .bold()
                         .fontDesign(.serif)

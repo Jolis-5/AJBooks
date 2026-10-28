@@ -9,22 +9,22 @@ import Foundation
 import Observation
 
 @Observable
-final class FavoritosStore {
-    private(set) var libros: [Libro] = []
+final class FavoritesStore {
+    private(set) var books: [Book] = []
 
-    func esFavorito(_ libro: Libro) -> Bool {
-        libros.contains { $0.id == libro.id }
+    func isFavorite(_ book: Book) -> Bool {
+        books.contains { $0.id == book.id }
     }
 
-    func alternar(_ libro: Libro) {
-        if esFavorito(libro) {
-            quitar(libro)
+    func toggle(_ book: Book) {
+        if isFavorite(book) {
+            remove(book)
         } else {
-            libros.append(libro)
+            books.append(book)
         }
     }
 
-    func quitar(_ libro: Libro) {
-        libros.removeAll { $0.id == libro.id }
+    func remove(_ book: Book) {
+        books.removeAll { $0.id == book.id }
     }
 }

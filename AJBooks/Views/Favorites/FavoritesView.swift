@@ -1,5 +1,5 @@
 //
-//  FavoritosView.swift
+//  FavoritesView.swift
 //  AJBooks
 //
 //  Created by Jolette Rivera on 27/09/26.
@@ -7,9 +7,10 @@
 
 import SwiftUI
 
-struct FavoritosView: View {
+struct FavoritesView: View {
 
-    @Environment(FavoritosStore.self) private var favoritos
+    @Environment(FavoritesStore.self) private var favorites
+    @State private var selectedBook: Book?
 
     var body: some View {
 
@@ -24,7 +25,7 @@ struct FavoritosView: View {
                     .padding(.top)
                     .fontDesign(.serif)
 
-                Text("Tienes guardados \(favoritos.libros.count) libros")
+                Text("Tienes guardados \(favorites.books.count) libros")
                     .font(.subheadline)
                     .fontDesign(.serif)
                     .padding(.bottom)
@@ -32,28 +33,36 @@ struct FavoritosView: View {
                 
                 
 
-                if favoritos.libros.isEmpty {
+                if favorites.books.isEmpty {
                     ContentUnavailableView("Aún no tienes favoritos",
                                            systemImage: "heart",
                                            description: Text("Toca el corazón de un libro para guardarlo."))
                 } else {
                     ScrollView {
                         VStack(spacing: 16) {
-                            ForEach(favoritos.libros) { libro in
-                                TarjetaLibroView(libro: libro)
+                            ForEach(favorites.books) { book in
+                                BookCardFavoritesView(book: book)
+                                    .onTapGesture {
+                                        selectedBook = book
+                                    }
+                                    .accessibilityAddTraits(.isButton)
                             }
                         }
                     }
-                    
                 }
+                
+                
+                
             }
-            
         }
-        .animation(.default, value: favoritos.libros)
+        .animation(.default, value: favorites.books)
+        .sheet(item: $selectedBook) { book in
+            BookDetailView(book: book)
+        }
     }
 }
 
 #Preview {
-    FavoritosView()
-        .environment(FavoritosStore())
+    FavoritesView()
+        .environment(FavoritesStore())
 }

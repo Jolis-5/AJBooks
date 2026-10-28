@@ -1,44 +1,44 @@
 //
-//  FiltroCategoriaView.swift
+//  CategoryFilterView.swift
 //  AJBooks
 //
 //  Created by Jolette Rivera on 11/10/26.
 //
-
 import SwiftUI
 
-enum CategoriaLibro: String, CaseIterable, Identifiable {
-    case novela = "Novela"
-    case clasicos = "Clásicos"
-    case infantil = "Infantil"
-    case ciencia = "Ciencia"
+enum BookCategory: String, CaseIterable, Identifiable {
+    case novel = "Novela"
+    case classics = "Clásicos"
+    case children = "Infantil"
+    case science = "Ciencia"
 
     var id: String { rawValue }
 }
 
-private struct LibroDemo: Identifiable {
+private struct DemoBook: Identifiable {
     let id = UUID()
     let title: String
     let author: String
-    let categoria: CategoriaLibro
+    let category: BookCategory
 }
 
-struct FiltroCategoriaView: View {
+struct CategoryFilterView: View {
 
-    @State private var categoriaSeleccionada: CategoriaLibro? = nil
+    @State private var selectedCategory: BookCategory? = nil
+    @State private var selectedBook: Book?   // 1. estado del detalle
 
-    private let libros: [LibroDemo] = [
-        LibroDemo(title: "La Odisea", author: "Homero", categoria: .clasicos),
-        LibroDemo(title: "Don Quijote de la Mancha", author: "Miguel de Cervantes", categoria: .clasicos),
-        LibroDemo(title: "El principito", author: "Antoine de Saint-Exupéry", categoria: .infantil),
-        LibroDemo(title: "Cien años de soledad", author: "Gabriel García Márquez", categoria: .novela),
-        LibroDemo(title: "Pedro Páramo", author: "Juan Rulfo", categoria: .novela),
+    private let books: [DemoBook] = [
+        DemoBook(title: "La Odisea", author: "Homero", category: .classics),
+        DemoBook(title: "Don Quijote de la Mancha", author: "Miguel de Cervantes", category: .classics),
+        DemoBook(title: "El principito", author: "Antoine de Saint-Exupéry", category: .children),
+        DemoBook(title: "Cien años de soledad", author: "Gabriel García Márquez", category: .novel),
+        DemoBook(title: "Pedro Páramo", author: "Juan Rulfo", category: .novel),
         
     ]
 
-    private var librosFiltrados: [LibroDemo] {
-        guard let categoria = categoriaSeleccionada else { return libros }
-        return libros.filter { $0.categoria == categoria }
+    private var filteredBooks: [DemoBook] {
+        guard let category = selectedCategory else { return books }
+        return books.filter { $0.category == category }
     }
 
     var body: some View {
@@ -54,49 +54,4 @@ struct FiltroCategoriaView: View {
 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
-                        chip(titulo: "Todas", seleccionado: categoriaSeleccionada == nil) {
-                            categoriaSeleccionada = nil
-                        }
-
-                        ForEach(CategoriaLibro.allCases) { categoria in
-                            chip(titulo: categoria.rawValue,
-                                 seleccionado: categoriaSeleccionada == categoria) {
-                                categoriaSeleccionada = categoria
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-                }
-
-                ScrollView {
-                    VStack(spacing: 16) {
-                        ForEach(librosFiltrados) { libro in
-                            BookCardView(title: libro.title, author: libro.author)
-                        }
-                    }
-                    .padding(.top)
-                }
-            }
-        }
-        .animation(.default, value: categoriaSeleccionada)
-    }
-
-    private func chip(titulo: String, seleccionado: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(titulo)
-                .font(.headline)
-                .fontDesign(.serif)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .foregroundStyle(.black)
-                .background(seleccionado ? Color.yellow : Color.white.opacity(0.6))
-                .clipShape(Capsule())
-        }
-        .accessibilityLabel("Categoría \(titulo)")
-        .accessibilityAddTraits(seleccionado ? .isSelected : [])
-    }
-}
-
-#Preview {
-    FiltroCategoriaView()
-}
+                        chip(title:

@@ -7,34 +7,34 @@
 
 import SwiftUI
 
-struct TarjetaLibroView: View {
-    let libro: Libro
+struct BookCardFavoritesView: View {
+    let book: Book
 
-    @Environment(FavoritosStore.self) private var favoritos
+    @Environment(FavoritesStore.self) private var favorites
 
     var body: some View {
-        let esFavorito = favoritos.esFavorito(libro)
+        let isFavorite = favorites.isFavorite(book)
 
-        BookCardView(title: libro.title, author: libro.author)
+        BookCardView(title: book.title, author: book.author)
         
         
             .overlay(alignment: .topTrailing) {
                 Button {
-                    favoritos.alternar(libro)
+                    favorites.toggle(book)
                 } label: {
-                    Image(systemName: esFavorito ? "heart.fill" : "heart")
+                    Image(systemName: isFavorite ? "heart.fill" : "heart")
                     
                     
                         .font(.title2)
                         .foregroundStyle(.red)
-                        .symbolEffect(.bounce, value: esFavorito)
+                        .symbolEffect(.bounce, value: isFavorite)
                         .padding(10)
                         .background(.ultraThinMaterial, in: Circle())
                 }
                 .padding(.top, 24)
                 .padding(.trailing, 40)
-                .accessibilityLabel(esFavorito ? "Quitar de favoritos" : "Guardar en favoritos")
-                .accessibilityHint(esFavorito ? "Quita este libro de tu lista de favoritos."
+                .accessibilityLabel(isFavorite ? "Quitar de favoritos" : "Guardar en favoritos")
+                .accessibilityHint(isFavorite ? "Quita este libro de tu lista de favoritos."
                                               : "Agrega este libro a tu lista de favoritos.")
             }
     }

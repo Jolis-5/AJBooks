@@ -38,10 +38,9 @@ struct BookCardView: View {
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .padding(.horizontal)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Libro: \(title), \(author)")
+        .accessibilityLabel("Book: \(title), \(author)")
         
     }
     
     
 }
-

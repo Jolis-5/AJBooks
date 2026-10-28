@@ -1,5 +1,5 @@
 //
-//  ListaLibrosView.swift
+//  BookListView.swift
 //  AJBooks
 //
 //  Created by Jolette Rivera on 26/09/26.
@@ -8,7 +8,8 @@
 
 import SwiftUI
 
-struct ListaLibrosView: View {
+struct BookListView: View {
+    @State private var selectedBook: Book?
     var body: some View {
 
         ZStack {
@@ -24,19 +25,29 @@ struct ListaLibrosView: View {
 
                 ScrollView {
                     VStack(spacing: 16) {
-                        ForEach(Libro.ejemplos) { libro in
-                            TarjetaLibroView(libro: libro)
+                        ForEach(Book.examples) { book in
+                            BookCardFavoritesView(book: book)
+                                // 1. toque en la tarjeta
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    selectedBook = book
+                                }
+                                .accessibilityAddTraits(.isButton)
                         }
                     }
-                
+
                 }
             }
         }
-        
+        // 2. hoja de detalle
+        .sheet(item: $selectedBook) { book in
+            BookDetailView(book: book)
+        }
+
     }
 }
 
 #Preview {
-    ListaLibrosView()
-        .environment(FavoritosStore())
+    BookListView()
+        .environment(FavoritesStore())
 }
