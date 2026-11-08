@@ -49,5 +49,7 @@ struct BookListView: View {
 
 #Preview {
     BookListView()
-        .environment(FavoritesStore())
+        .environment(FavoritesStore.preview)
 }
+
+ 

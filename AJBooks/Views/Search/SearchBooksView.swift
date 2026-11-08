@@ -2,9 +2,6 @@
 //  BookSearchView.swift
 //  AJBooks
 //
-//  Created by Jolette Rivera on 26/09/26.
-//
-
 
 import SwiftUI
 
@@ -13,12 +10,7 @@ struct BookSearchView: View {
     @State private var selectedBook: Book?
 
     private var results: [Book] {
-        let query = searchText.trimmingCharacters(in: .whitespaces)
-        guard !query.isEmpty else { return Book.examples }
-        return Book.examples.filter {
-            $0.title.localizedCaseInsensitiveContains(query) ||
-            $0.author.localizedCaseInsensitiveContains(query)
-        }
+        Book.search(searchText, in: Book.examples)
     }
 
     private var resultsText: String {
@@ -88,4 +80,5 @@ struct BookSearchView: View {
 
 #Preview {
     BookSearchView()
+        .environment(FavoritesStore.preview)
 }
