@@ -30,6 +30,11 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		461B4DCB30A0E3BE00295079 /* ViewModels */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
 		467A641A3068223600EF57A3 /* AJBooks */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = AJBooks;
@@ -75,6 +80,7 @@
 		467A640F3068223600EF57A3 = {
 			isa = PBXGroup;
 			children = (
+				461B4DCB30A0E3BE00295079 /* ViewModels */,
 				467A641A3068223600EF57A3 /* AJBooks */,
 				467A642A3068223800EF57A3 /* AJBooksTests */,
 				467A64343068223800EF57A3 /* AJBooksUITests */,
@@ -108,6 +114,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				461B4DCB30A0E3BE00295079 /* ViewModels */,
 				467A641A3068223600EF57A3 /* AJBooks */,
 			);
 			name = AJBooks;

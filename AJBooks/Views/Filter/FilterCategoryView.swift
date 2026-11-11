@@ -33,7 +33,6 @@ struct CategoryFilterView: View {
         DemoBook(title: "El principito", author: "Antoine de Saint-Exupéry", category: .children),
         DemoBook(title: "Cien años de soledad", author: "Gabriel García Márquez", category: .novel),
         DemoBook(title: "Pedro Páramo", author: "Juan Rulfo", category: .novel),
-        
     ]
 
     private var filteredBooks: [DemoBook] {
@@ -54,4 +53,63 @@ struct CategoryFilterView: View {
 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
-                        chip(title:
+                        chip(title: "Todas", isSelected: selectedCategory == nil) {
+                            selectedCategory = nil
+                        }
+
+                        ForEach(BookCategory.allCases) { category in
+                            chip(title: category.rawValue,
+                                 isSelected: selectedCategory == category) {
+                                selectedCategory = category
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+
+                ScrollView {
+                    VStack(spacing: 16) {
+                        ForEach(filteredBooks) { book in
+                            BookCardView(title: book.title, author: book.author)
+                                // 2. toque en la tarjeta
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    selectedBook = Book(
+                                        id: book.id.uuidString,
+                                        title: book.title,
+                                        author: book.author
+                                    )
+                                }
+                                .accessibilityAddTraits(.isButton)
+                        }
+                    }
+                    .padding(.top)
+                }
+            }
+        }
+        .animation(.default, value: selectedCategory)
+        // 3. hoja de detalle
+        .sheet(item: $selectedBook) { book in
+            BookDetailView(book: book)
+        }
+    }
+
+    private func chip(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.headline)
+                .fontDesign(.serif)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .foregroundStyle(.black)
+                .background(isSelected ? Color.yellow : Color.white.opacity(0.6))
+                .clipShape(Capsule())
+        }
+        .accessibilityLabel("Categoría \(title)")
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
+#Preview {
+    CategoryFilterView()
+}

@@ -25,4 +25,5 @@ struct RootView: View {
 
 #Preview {
     RootView()
+        .environment(FavoritesStore.preview)
 }

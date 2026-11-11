@@ -64,5 +64,5 @@ struct FavoritesView: View {
 
 #Preview {
     FavoritesView()
-        .environment(FavoritesStore())
+        .environment(FavoritesStore.preview)
 }

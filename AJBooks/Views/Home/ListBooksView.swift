@@ -2,18 +2,22 @@
 //  BookListView.swift
 //  AJBooks
 //
-//  Created by Jolette Rivera on 26/09/26.
-//
-
 
 import SwiftUI
 
 struct BookListView: View {
+    @State private var viewModel: BookViewModel
     @State private var selectedBook: Book?
+    init(viewModel: BookViewModel? = nil) {
+        _viewModel = .init(
+            wrappedValue: viewModel ?? BookViewModel(
+                bookService: BookService(apiClient: APIClient())
+            )
+        )
+    }
+
     var body: some View {
-
         ZStack {
-
             Color.cyan
                 .ignoresSafeArea()
 
@@ -23,31 +27,73 @@ struct BookListView: View {
                     .padding()
                     .fontDesign(.serif)
 
-                ScrollView {
-                    VStack(spacing: 16) {
-                        ForEach(Book.examples) { book in
-                            BookCardFavoritesView(book: book)
-                                // 1. toque en la tarjeta
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    selectedBook = book
-                                }
-                                .accessibilityAddTraits(.isButton)
+                switch viewModel.listStatus {
+                case .loading:
+                    ProgressView("Cargando libros...")
+                        .progressViewStyle(.circular)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                case .loaded(let books):
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            ForEach(books) { book in
+                                BookCardFavoritesView(book: book)
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        selectedBook = book
+                                    }
+                                    .accessibilityAddTraits(.isButton)
+                            }
                         }
                     }
 
+                case .empty:
+                    ContentUnavailableView(
+                        "Sin resultados",
+                        systemImage: "books.vertical",
+                        description: Text("No se encontraron libros para mostrar.")
+                    )
+
+                case .error(let errorMessage):
+                    ContentUnavailableView {
+                        Label("No se pudo cargar", systemImage: "wifi.exclamationmark")
+                    } description: {
+                        Text(errorMessage)
+                    } actions: {
+                        Button("Reintentar") {
+                            Task { await viewModel.fetchBooks() }
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
                 }
             }
         }
-        // 2. hoja de detalle
+        .task {
+            await viewModel.fetchBooksIfNeeded()
+        }
         .sheet(item: $selectedBook) { book in
             BookDetailView(book: book)
         }
-
     }
 }
 
-#Preview {
-    BookListView()
-        .environment(FavoritesStore())
+#Preview("Loaded") {
+    BookListView(viewModel: BookViewModel(
+        bookService: MockBookService(booksToReturn: BookDTO.previewExamples)
+    ))
+    .environment(FavoritesStore.preview)
+}
+
+#Preview("Empty") {
+    BookListView(viewModel: BookViewModel(
+        bookService: MockBookService(booksToReturn: [])
+    ))
+    .environment(FavoritesStore.preview)
+}
+
+#Preview("Error") {
+    BookListView(viewModel: BookViewModel(
+        bookService: MockBookService(error: APIClient.APIError.httpError(statusCode: 500))
+    ))
+    .environment(FavoritesStore.preview)
 }

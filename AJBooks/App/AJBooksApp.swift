@@ -5,33 +5,30 @@
 //  Created by Jolette Rivera on 26/09/26.
 //
 
+
 import SwiftUI
 import SwiftData
 
 @main
 struct AJBooksApp: App {
-    @State private var favorites = FavoritesStore()
+    private let container: ModelContainer
+    @State private var favorites: FavoritesStore
 
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        
-        
+    init() {
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            let container = try ModelContainer(for: SavedBook.self)
+            self.container = container
+            _favorites = State(initialValue: FavoritesStore(container: container))
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }
-    }()
+    }
 
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environment(favorites)
         }
-        .modelContainer(sharedModelContainer)
+        .modelContainer(container)
     }
 }
