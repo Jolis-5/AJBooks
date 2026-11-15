@@ -23,14 +23,14 @@ final class BookSearchTests: XCTestCase {
         XCTAssertEqual(results.map(\.id), ["quijote"])
     }
 
-    // Caso normal: coincide por autor, sin importar mayúsculas
+    // Coincide por autor, sin importar mayúsculas
     func testSearchByAuthorIgnoresCase() {
         let results = Book.search("HOMERO", in: books)
 
         XCTAssertEqual(results.map(\.id), ["odisea"])
     }
 
-    // Caso límite: consulta vacía o solo espacios devuelve todo
+    // Consulta vacía o solo espacios devuelve todo
     func testSearchWithBlankQueryReturnsAllBooks() {
         XCTAssertEqual(Book.search("", in: books), books)
         XCTAssertEqual(Book.search("   ", in: books), books)

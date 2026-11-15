@@ -22,6 +22,9 @@ private final class SequencedBookService: BookServiceProtocol {
         callCount += 1
         return try results.removeFirst().get()
     }
+
+    func fetchBookDescription(key: String) async throws -> String? { nil }
+
 }
 
 @MainActor
@@ -48,8 +51,8 @@ final class BookViewModelTests: XCTestCase {
     ]
 
     private let expectedBooks = [
-        Book(id: "/works/OL1W", title: "Swift Básico", author: "Ana"),
-        Book(id: "/works/OL2W", title: "Swift Avanzado", author: "Luis")
+        Book(id: "/works/OL1W", title: "Swift Básico", author: "Ana", authors: ["Ana"], firstPublishYear: 2020),
+        Book(id: "/works/OL2W", title: "Swift Avanzado", author: "Luis", authors: ["Luis"], firstPublishYear: 2022)
     ]
 
     // Respuesta exitosa

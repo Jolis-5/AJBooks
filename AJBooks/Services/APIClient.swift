@@ -6,6 +6,7 @@
 
 
 import Foundation
+import OSLog
 
 protocol APIClientProtocol {
     func get<T: Decodable>(
@@ -65,7 +66,7 @@ final class APIClient: APIClientProtocol {
         do {
             (data, response) = try await session.data(for: request)
         } catch let urlError as URLError {
-            // Una tarea cancelada (cambio de pestaña) no es un error para el usuario.
+            // Una tarea cancelada no es un error para el usuario
             if urlError.code == .cancelled { throw CancellationError() }
             throw APIError.connectivity(urlError.code)
         }
@@ -83,7 +84,8 @@ final class APIClient: APIClientProtocol {
         do {
             return try JSONDecoder().decode(T.self, from: data)
         } catch {
-            print("Error de decodificación:", error)
+            Logger(subsystem: "FCA.AJBooks", category: "network")
+                .error("Error de decodificación: \(error.localizedDescription)")
             throw APIError.decoding
         }
     }

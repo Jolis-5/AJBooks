@@ -4,112 +4,134 @@
 //
 //  Created by Jolette Rivera on 11/10/26.
 //
+//  Explorar por categoría: cada categoría consulta un tema (subject) de Open Library. Reutiliza BookViewModel, uno por categoría, para no volver a descargar al cambiar de chip.
+//
+
 import SwiftUI
 
 enum BookCategory: String, CaseIterable, Identifiable {
     case novel = "Novela"
     case classics = "Clásicos"
+    case fantasy = "Fantasía"
+    case romance = "Romance"
+    case poetry = "Poesía"
     case children = "Infantil"
     case science = "Ciencia"
+    case history = "Historia"
 
     var id: String { rawValue }
-}
 
-private struct DemoBook: Identifiable {
-    let id = UUID()
-    let title: String
-    let author: String
-    let category: BookCategory
+    /// Consulta de Open Library para la categoría
+    var query: String {
+        switch self {
+        case .novel: return "subject:fiction"
+        case .classics: return "subject:classic_literature"
+        case .fantasy: return "subject:fantasy"
+        case .romance: return "subject:romance"
+        case .poetry: return "subject:poetry"
+        case .children: return "subject:children"
+        case .science: return "subject:science"
+        case .history: return "subject:history"
+        }
+    }
 }
 
 struct CategoryFilterView: View {
 
-    @State private var selectedCategory: BookCategory? = nil
-    @State private var selectedBook: Book?   // 1. estado del detalle
+    @State private var selectedCategory: BookCategory = .novel
+    @State private var selectedBook: Book?
+    @State private var viewModels: [BookCategory: BookViewModel] = [:]
 
-    private let books: [DemoBook] = [
-        DemoBook(title: "La Odisea", author: "Homero", category: .classics),
-        DemoBook(title: "Don Quijote de la Mancha", author: "Miguel de Cervantes", category: .classics),
-        DemoBook(title: "El principito", author: "Antoine de Saint-Exupéry", category: .children),
-        DemoBook(title: "Cien años de soledad", author: "Gabriel García Márquez", category: .novel),
-        DemoBook(title: "Pedro Páramo", author: "Juan Rulfo", category: .novel),
-    ]
+    private let bookService: any BookServiceProtocol
 
-    private var filteredBooks: [DemoBook] {
-        guard let category = selectedCategory else { return books }
-        return books.filter { $0.category == category }
+    init(bookService: any BookServiceProtocol = BookService(apiClient: APIClient())) {
+        self.bookService = bookService
+    }
+
+    /// Devuelve (o crea) el ViewModel de la categoría
+    private func viewModel(for category: BookCategory) -> BookViewModel {
+        if let existing = viewModels[category] { return existing }
+        return BookViewModel(bookService: bookService, query: category.query)
     }
 
     var body: some View {
-        ZStack {
-            Color.cyan
-                .ignoresSafeArea()
+        VStack(spacing: 12) {
+            ScreenHeader(eyebrow: "Explorar", title: "Categorías")
 
-            VStack {
-                Text("Categorías")
-                    .font(.system(size: 40))
-                    .padding()
-                    .fontDesign(.serif)
-
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
-                        chip(title: "Todas", isSelected: selectedCategory == nil) {
-                            selectedCategory = nil
-                        }
-
-                        ForEach(BookCategory.allCases) { category in
-                            chip(title: category.rawValue,
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    ForEach(BookCategory.allCases) { category in
+                        ChipView(title: category.rawValue,
                                  isSelected: selectedCategory == category) {
-                                selectedCategory = category
-                            }
+                            selectedCategory = category
                         }
+                        .accessibilityLabel("Categoría \(category.rawValue)")
                     }
-                    .padding(.horizontal)
                 }
+                .padding(.horizontal)
+                .padding(.vertical, 2)
+            }
 
-                ScrollView {
-                    VStack(spacing: 16) {
-                        ForEach(filteredBooks) { book in
-                            BookCardView(title: book.title, author: book.author)
-                                // 2. toque en la tarjeta
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    selectedBook = Book(
-                                        id: book.id.uuidString,
-                                        title: book.title,
-                                        author: book.author
-                                    )
-                                }
-                                .accessibilityAddTraits(.isButton)
-                        }
-                    }
-                    .padding(.top)
-                }
+            if let viewModel = viewModels[selectedCategory] {
+                content(for: viewModel)
+            } else {
+                LoadingStateView(message: "Cargando \(selectedCategory.rawValue.lowercased())...")
             }
         }
+        .screenBackground()
+        .task(id: selectedCategory) {
+            let viewModel = viewModel(for: selectedCategory)
+            viewModels[selectedCategory] = viewModel
+            await viewModel.fetchBooksIfNeeded()
+        }
         .animation(.default, value: selectedCategory)
-        // 3. hoja de detalle
-        .sheet(item: $selectedBook) { book in
+        .navigationDestination(item: $selectedBook) { book in
             BookDetailView(book: book)
         }
+        .toolbar(.hidden, for: .navigationBar)
     }
 
-    private func chip(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(title)
-                .font(.headline)
-                .fontDesign(.serif)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .foregroundStyle(.black)
-                .background(isSelected ? Color.yellow : Color.white.opacity(0.6))
-                .clipShape(Capsule())
+    @ViewBuilder
+    private func content(for viewModel: BookViewModel) -> some View {
+        switch viewModel.listStatus {
+        case .loading:
+            LoadingStateView(message: "Cargando \(selectedCategory.rawValue.lowercased())...")
+
+        case .loaded(let books):
+            ScrollView {
+                LazyVGrid(columns: BookCardView.columns, spacing: 16) {
+                    ForEach(books) { book in
+                        BookCardFavoritesView(book: book)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                selectedBook = book
+                            }
+                            .accessibilityAddTraits(.isButton)
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.bottom)
+            }
+            .id(selectedCategory)
+
+        case .empty:
+            EmptyStateView(
+                title: "Sin libros",
+                systemImage: "books.vertical",
+                message: "No hay libros en esta categoría por ahora."
+            )
+
+        case .error(let message):
+            ErrorStateView(message: message) {
+                Task { await viewModel.fetchBooks() }
+            }
         }
-        .accessibilityLabel("Categoría \(title)")
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
 #Preview {
-    CategoryFilterView()
+    NavigationStack {
+        CategoryFilterView(bookService: MockBookService(booksToReturn: BookDTO.previewExamples))
+    }
+    .environment(FavoritesStore.preview)
 }

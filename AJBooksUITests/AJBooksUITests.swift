@@ -10,32 +10,43 @@ import XCTest
 final class AJBooksUITests: XCTestCase {
 
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-
-        // In UI tests it is usually best to stop immediately when a failure occurs.
         continueAfterFailure = false
-
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
     }
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
-
+    /// Recorre la navegación principal sin depender de la red:
+    /// Bienvenida → Inicio → Buscar → Mis libros → Explorar
     @MainActor
-    func testExample() throws {
-        // UI tests must launch the application that they test.
+    func testMainNavigationFlow() throws {
         let app = XCUIApplication()
         app.launch()
 
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // XCUIAutomation Documentation
-        // https://developer.apple.com/documentation/xcuiautomation
+        // Bienvenida
+        let enter = app.buttons["Entrar"]
+        XCTAssertTrue(enter.waitForExistence(timeout: 5))
+        enter.tap()
+
+        // Pestañas
+        let tabBar = app.tabBars.firstMatch
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 5))
+        XCTAssertTrue(tabBar.buttons["Inicio"].exists)
+
+        // Buscar: existe el campo de búsqueda y las sugerencias
+        tabBar.buttons["Buscar"].tap()
+        XCTAssertTrue(app.textFields["Buscar libro"].waitForExistence(timeout: 5))
+
+        // Mis libros: se ve el estado vacío o el filtro de libros guardados
+        tabBar.buttons["Mis libros"].tap()
+        let emptyState = app.staticTexts["Tu estante está vacío"]
+        let filter = app.textFields["Filtrar mis libros"]
+        XCTAssertTrue(emptyState.waitForExistence(timeout: 5) || filter.exists)
+
+        // Explorar: aparecen los chips de categorías
+        tabBar.buttons["Explorar"].tap()
+        XCTAssertTrue(app.buttons["Categoría Novela"].waitForExistence(timeout: 5))
     }
 
     @MainActor
     func testLaunchPerformance() throws {
-        // This measures how long it takes to launch your application.
         measure(metrics: [XCTApplicationLaunchMetric()]) {
             XCUIApplication().launch()
         }

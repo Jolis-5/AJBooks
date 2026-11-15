@@ -13,12 +13,18 @@ struct RootView: View {
     @State private var hasEntered = false
 
     var body: some View {
-        if hasEntered {
-            MainTabView()
-        } else {
-            ContentView(onEnter: {
-                hasEntered = true
-            })
+        Group {
+            if hasEntered {
+                MainTabView()
+                    .transition(.opacity)
+            } else {
+                ContentView(onEnter: {
+                    withAnimation(.easeInOut(duration: 0.4)) {
+                        hasEntered = true
+                    }
+                })
+                .transition(.opacity)
+            }
         }
     }
 }

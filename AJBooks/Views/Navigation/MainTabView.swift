@@ -2,7 +2,11 @@
 //  MainTabView.swift
 //  AJBooks
 //
-//  Created by Jolette Rivera on 11/10/26.
+//  Contiene los tres flujos del MVP, cada uno con su propio NavigationStack:
+//  - Inicio → lista de libros → detalle
+//  - Buscar → resultados → detalle
+//  - Mis libros → libro guardado → detalle
+//  y una pestaña extra para explorar por categorías.
 //
 
 import SwiftUI
@@ -13,28 +17,48 @@ enum AppTab: Hashable {
 
 struct MainTabView: View {
     @State private var selectedTab: AppTab = .home
-    
-    
+    @Environment(FavoritesStore.self) private var favorites
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            BookListView()
-                .tabItem { Label("Inicio", systemImage: "books.vertical") }
-                .tag(AppTab.home)
+            NavigationStack {
+                BookListView()
+            }
+            .tabItem { Label("Inicio", systemImage: "books.vertical") }
+            .tag(AppTab.home)
 
-            BookSearchView()
-                .tabItem { Label("Search", systemImage: "magnifyingglass") }
-                .tag(AppTab.search)
+            NavigationStack {
+                BookSearchView()
+            }
+            .tabItem { Label("Buscar", systemImage: "magnifyingglass") }
+            .tag(AppTab.search)
 
-            FavoritesView()
-                .tabItem { Label("Saved", systemImage: "heart") }
-                .tag(AppTab.favorites)
+            NavigationStack {
+                FavoritesView(onExplore: { selectedTab = .search })
+            }
+            .tabItem { Label("Mis libros", systemImage: "heart") }
+            .badge(favorites.books.count)
+            .tag(AppTab.favorites)
 
-            CategoryFilterView()
-                .tabItem { Label("Filter", systemImage: "slider.horizontal.3") }
-                .tag(AppTab.filter)
+            NavigationStack {
+                CategoryFilterView()
+            }
+            .tabItem { Label("Explorar", systemImage: "square.grid.2x2") }
+            .tag(AppTab.filter)
         }
-        .tint(.pink)
+        .tint(AppColors.wine)
+        // Errores de persistencia de cualquier pantalla
+        .alert(
+            "Algo salió mal",
+            isPresented: Binding(
+                get: { favorites.errorMessage != nil },
+                set: { if !$0 { favorites.clearError() } }
+            )
+        ) {
+            Button("Aceptar", role: .cancel) { favorites.clearError() }
+        } message: {
+            Text(favorites.errorMessage ?? "")
+        }
     }
 }
 

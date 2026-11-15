@@ -8,6 +8,7 @@
 
 import SwiftUI
 import SwiftData
+import OSLog
 
 @main
 struct AJBooksApp: App {
@@ -15,20 +16,29 @@ struct AJBooksApp: App {
     @State private var favorites: FavoritesStore
 
     init() {
-        do {
-            let container = try ModelContainer(for: SavedBook.self)
-            self.container = container
-            _favorites = State(initialValue: FavoritesStore(container: container))
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
+        let container = Self.makeContainer()
+        self.container = container
+        _favorites = State(initialValue: FavoritesStore(container: container))
     }
 
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environment(favorites)
+                .tint(AppColors.wine)
         }
         .modelContainer(container)
+    }
+
+    /// Crea el almacenamiento en disco. Si no es posible (disco lleno, datos corruptos) usa uno en memoria para que la app no se cierre.
+    private static func makeContainer() -> ModelContainer {
+        do {
+            return try ModelContainer(for: SavedBook.self)
+        } catch {
+            Logger(subsystem: "FCA.AJBooks", category: "persistence")
+                .error("No se pudo abrir el almacenamiento local, se usará memoria: \(error.localizedDescription)")
+            let config = ModelConfiguration(isStoredInMemoryOnly: true)
+            return try! ModelContainer(for: SavedBook.self, configurations: config)
+        }
     }
 }
