@@ -10,14 +10,19 @@
 import Foundation
 import Observation
 import SwiftData
+import OSLog
 
 @Observable
 final class FavoritesStore {
     private let container: ModelContainer
     private var context: ModelContext { container.mainContext }
 
-    /// Estado que leen las vistas. Se recarga desde SwiftData tras cada cambio.
+    /// Estado que leen las vistas, se recarga desde SwiftData tras cada cambio ordenado del más reciente al más antiguo
     private(set) var books: [Book] = []
+
+    /// Mensaje para el usuario cuando una operación de guardado falla
+    /// La vista lo muestra en una alerta y luego lo limpia con "clearError()".
+    private(set) var errorMessage: String?
 
     init(container: ModelContainer) {
         self.container = container
@@ -28,25 +33,27 @@ final class FavoritesStore {
         books.contains { $0.id == book.id }
     }
 
-    /// true si se guardó; false si el id es inválido o ya estaba guardado.
+    /// Guarda un libro. Devuelve false si el id es inválido, ya estaba guardado o la escritura falló
     @discardableResult
     func add(_ book: Book) -> Bool {
         let id = book.id.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !id.isEmpty, !isFavorite(book) else { return false }
 
         context.insert(SavedBook(book: book))
-        save()
-        return true
+        return save(failureMessage: "No se pudo guardar «\(book.title)». Intenta de nuevo.")
     }
 
-    /// true si se eliminó; false si no estaba guardado.
+    /// Elimina un libro guardado. Devuelve false si no estaba guardado o la escritura falló
     @discardableResult
     func remove(_ book: Book) -> Bool {
         guard let saved = fetchSaved(id: book.id) else { return false }
 
         context.delete(saved)
-        save()
-        return true
+        return save(failureMessage: "No se pudo eliminar «\(book.title)». Intenta de nuevo.")
+    }
+
+    func clearError() {
+        errorMessage = nil
     }
 
     func toggle(_ book: Book) {
@@ -66,18 +73,26 @@ final class FavoritesStore {
         return try? context.fetch(descriptor).first
     }
 
-    private func save() {
+    /// Persiste los cambios. Si falla, deshace los cambios pendientes para que la interfaz nunca muestre un estado distinto al que está guardado
+    @discardableResult
+    private func save(failureMessage: String) -> Bool {
+        var succeeded = true
         do {
             try context.save()
         } catch {
-            print("Error al guardar favoritos:", error)
+            Logger(subsystem: "FCA.AJBooks", category: "persistence")
+                .error("Error al guardar favoritos: \(error.localizedDescription)")
+            context.rollback()
+            errorMessage = failureMessage
+            succeeded = false
         }
         reload()
+        return succeeded
     }
 
     private func reload() {
         let descriptor = FetchDescriptor<SavedBook>(
-            sortBy: [SortDescriptor(\.savedAt)]
+            sortBy: [SortDescriptor(\.savedAt, order: .reverse)]
         )
         let saved = (try? context.fetch(descriptor)) ?? []
         books = saved.map(\.asBook)
@@ -93,7 +108,6 @@ extension FavoritesStore {
     }
 
     static var preview: FavoritesStore {
-        // swiftlint:disable:next force_try
         try! makeInMemory()
     }
 }

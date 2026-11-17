@@ -13,29 +13,73 @@ struct BookCardFavoritesView: View {
     @Environment(FavoritesStore.self) private var favorites
 
     var body: some View {
-        let isFavorite = favorites.isFavorite(book)
-
-        BookCardView(title: book.title, author: book.author)
-        
-        
+        BookCardView(book: book)
             .overlay(alignment: .topTrailing) {
-                Button {
-                    favorites.toggle(book)
-                } label: {
-                    Image(systemName: isFavorite ? "heart.fill" : "heart")
-                    
-                    
-                        .font(.title2)
-                        .foregroundStyle(.red)
-                        .symbolEffect(.bounce, value: isFavorite)
-                        .padding(10)
-                        .background(.ultraThinMaterial, in: Circle())
-                }
-                .padding(.top, 24)
-                .padding(.trailing, 40)
-                .accessibilityLabel(isFavorite ? "Quitar de favoritos" : "Guardar en favoritos")
-                .accessibilityHint(isFavorite ? "Quita este libro de tu lista de favoritos."
-                                              : "Agrega este libro a tu lista de favoritos.")
+                FavoriteButton(book: book)
+                    .padding(16)
+            }
+            .contextMenu {
+                FavoriteMenuButton(book: book)
             }
     }
+}
+
+/// Botón de corazón reutilizable para guardar / quitar un libro
+struct FavoriteButton: View {
+    let book: Book
+    var compact = false
+
+    @Environment(FavoritesStore.self) private var favorites
+
+    var body: some View {
+        let isFavorite = favorites.isFavorite(book)
+
+        Button {
+            withAnimation(.snappy) { favorites.toggle(book) }
+        } label: {
+            Image(systemName: isFavorite ? "heart.fill" : "heart")
+                .font(compact ? .body : .title3)
+                .foregroundStyle(isFavorite ? AppColors.red : AppColors.wine)
+                .symbolEffect(.bounce, value: isFavorite)
+                .frame(width: compact ? 36 : 40, height: compact ? 36 : 40)
+                .background(AppColors.paper.opacity(0.92), in: Circle())
+                .shadow(color: .black.opacity(0.12), radius: 3, y: 1)
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .sensoryFeedback(.impact(weight: .light), trigger: isFavorite)
+        .accessibilityLabel(isFavorite ? "Quitar de Mis libros" : "Guardar en Mis libros")
+        .accessibilityHint(isFavorite ? "Elimina este libro de tu lista guardada."
+                                      : "Agrega este libro a tu lista guardada.")
+    }
+}
+
+/// Opción de menú contextual para guardar / eliminar
+struct FavoriteMenuButton: View {
+    let book: Book
+    @Environment(FavoritesStore.self) private var favorites
+
+    var body: some View {
+        if favorites.isFavorite(book) {
+            Button(role: .destructive) {
+                favorites.remove(book)
+            } label: {
+                Label("Eliminar de Mis libros", systemImage: "trash")
+            }
+        } else {
+            Button {
+                favorites.add(book)
+            } label: {
+                Label("Guardar en Mis libros", systemImage: "heart")
+            }
+        }
+    }
+}
+
+#Preview {
+    BookCardFavoritesView(book: Book.examples[0])
+        .frame(width: 190)
+        .padding()
+        .screenBackground()
+        .environment(FavoritesStore.preview)
 }

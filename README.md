@@ -1,81 +1,170 @@
+# AJBooks
 
-## Práctica 4: Navegación y estado compartido
+**AJBooks** es una app para iPhone hecha en SwiftUI que permite buscar libros en el catálogo abierto de [Open Library](https://openlibrary.org), consultar su ficha (portada, autores y año de publicación) y guardarlos en una biblioteca personal que se conserva en el dispositivo.
 
-En esta práctica se llevaron a código las decisiones de navegación y de organización del estado definidas en la Práctica 3, y se analizó cómo separar responsabilidades con una propuesta basada en MVVM.
-
-## 1. Conexión entre la bienvenida y el catálogo
-
-### `RootView` 
-Se agregó una nueva vista llamada `RootView` que permite decidir qué pantalla mostrar al abrir la app. Mantiene un estado `hasEntered`: mientras es `false` muestra la bienvenida, y cuando cambia a `true` muestra el menú principal. Se usó `@State` (y no un valor persistente) para que la bienvenida aparezca cada vez que se abre la aplicación.
-
-### `ContentView` 
-La vista de bienvenida ahora recibe una acción `onEnter`, que se ejecuta al presionar el botón **Entrar**. De esta forma la pantalla solo se encarga de mostrarse, y la decisión de a dónde ir queda en `RootView`.
-
-### `AJBooksApp`
-El punto de entrada de la app ahora carga `RootView` en lugar de `ContentView`, y crea el estado compartido de favoritos.
+<p align="center">
+  <img src="Docs/screenshots/01-bienvenida.png" width="180" alt="Bienvenida">
+  <img src="Docs/screenshots/04-buscar-resultados.png" width="180" alt="Resultados de búsqueda">
+  <img src="Docs/screenshots/05-detalle.png" width="180" alt="Detalle de un libro">
+  <img src="Docs/screenshots/08-mis-libros.png" width="180" alt="Mis libros">
+</p>
 
 ---
 
-## 2. Menú inferior
+## Descripción
 
-### `MainTabView`
-Se agregó una nueva vista llamada `MainTabView` que permite navegar entre las secciones principales mediante una barra inferior (`TabView`), con cuatro pestañas:
+Cuando alguien quiere recordar un libro que le recomendaron, revisar quién lo escribió o cuándo se publicó, la información suele estar repartida entre tiendas en línea, notas sueltas y capturas de pantalla.
 
-| Pestaña | Vista |
+AJBooks reúne eso en un solo lugar:
+- **busca** cualquier libro por título, autor o tema en un catálogo de millones de obras,
+- muestra una **ficha clara** de cada libro,
+- permite **guardar** los que interesan en *Mis libros*, una lista que sigue disponible aunque se cierre la app o no haya internet.
+
+La app no vende ni presta libros: su propósito es descubrir libros y llevar una lista personal de lectura.
+
+---
+
+## Funcionalidades
+
+| Funcionalidad | Detalle |
 | :--- | :--- |
-| Inicio | `ListaLibrosView` |
-| Search | `BusquedaLibroView` |
-| Saved | `FavoritosView` |
-| Filter | `FiltroCategoriaView` |
+| **Bienvenida** | Pantalla de entrada con la identidad visual de la app |
+| **Inicio** | Lista de libros clásicos de la literatura desde Open Library, se recarga deslizando hacia abajo |
+| **Buscar** | Búsqueda en Open Library mientras se escribe (mínimo 2 letras) y sugerencias para empezar |
+| **Resultados** | Portada (si existe), título, autor(es) y año de cada libro |
+| **Detalle** | Portada, título, autores, año de primera publicación, descripción (si existe) y botón para compartir el enlace de Open Library |
+| **Guardar y eliminar** | Con el corazón de cada tarjeta, el botón del detalle, el menú o la papelera de *Mis libros* (pide confirmación) |
+| **Mis libros** | Libros guardados del más reciente al más antiguo, con contador, filtro local y el número de libros en la pestaña |
+| **Persistencia local** | Los libros guardados se conservan al cerrar la app |
+| **Explorar** | Libros por categoría: Novela, Clásicos, Fantasía, Romance, Poesía, Infantil, Ciencia e Historia |
+| **Estados de pantalla** | Cargando, error con *Reintentar*, sin resultados, sin portada y lista vacía |
+| **Diseño** | Paleta vino / rojo / dusty pink / sand / creme / blanco, tipografía New York + SF Pro, modo oscuro y Dynamic Type |
 
-La pestaña activa se controla con el `enum` `AppTab`. Se nombró `AppTab` y no `Tab` para evitar confusión.
-
-### `FiltroCategoriaView` 
-Se agregó una nueva vista llamada `FiltroCategoriaView` que permite filtrar los libros por categoría (Novela, Clásicos, Infantil y Ciencia) mediante botones de selección. La opción **Todas** muestra el catálogo completo. Por ahora utiliza sus propios datos de ejemplo y no está conectada a los favoritos.
-
----
-
-## 3. Información compartida: favoritos
-
-Para que guardar un libro en una pantalla se refleje en las demás, se creó un único objeto que concentra la lista de favoritos y se comparte con toda la app.
-
-### `Libro` 
-Se agregó un nuevo modelo llamado `Libro`, con identificador, título y autor, que permite identificar de forma única cada libro para poder guardarlo. Incluye una lista de libros de ejemplo que sirve como catálogo por lo mientras.
-
-### `FavoritosStore` 
-Se agregó una nueva clase observable llamada `FavoritosStore` que permite guardar y consultar los libros favoritos. 
-
-Se crea una sola vez en `AJBooksApp` y se inyecta con `.environment`, de modo que cualquier vista pueda leerlo con `@Environment`.
-
-### `BookCardFavoriteView` 
-permite marcar un libro como favorito. Envuelve a `BookCardView` y con un botón de corazón que consulta y modifica `FavoritosStore`.
-
-##Resultado de la práctica " Deberás implementar el flujo principal de navegación de tu MVP y al menos un caso real de información compartida entre vistas."
-- Al tocar el corazón en **Inicio**, el libro aparece en **Saved** 
-- `FavoritosView` muestra un mensaje cuando la lista está vacía y el total de libros guardados.
+### Flujos principales
+1. **Inicio → lista de libros → detalle**
+2. **Buscar → resultados → detalle**
+3. **Mis libros → libro guardado → detalle**
 
 ---
 
+## Tecnologías
+
+| Tipo | Herramienta |
+| :--- | :--- |
+| Lenguaje | Swift 5 (modo de lenguaje) |
+| Interfaz | SwiftUI (`NavigationStack`, `TabView`, `Layout` personalizado) |
+| Estado | Framework Observation (`@Observable`, `@State`, `@Environment`) |
+| Persistencia | SwiftData (`@Model`, `ModelContainer`) |
+| Red | `URLSession` con `async/await` y `Codable` |
+| Pruebas | XCTest (pruebas unitarias y de interfaz) |
+| IDE | Xcode 26 |
+| Servicio externo | Open Library Search API, Works API y Covers API |
+| Control de versiones | Git y GitHub |
 
 
-##SEGUNDA PARTE: Análisis para una propuesta MVVM
+---
 
-MVVM separa la app en tres partes:
+## Requisitos
 
-- **Model:** los datos (`Libro`).
-- **View:** lo que se ve en pantalla (`ListaLibrosView`, `FavoritosView`, etc.).
-- **ViewModel:** prepara los datos para una vista y maneja su lógica, sin dibujar nada.
+| Requisito | Versión |
+| :--- | :--- |
+| macOS | Uno que pueda ejecutar Xcode 26 |
+| Xcode | 26.0 o superior (probado con **Xcode 26.6**) |
+| iOS de destino | **26.5** o superior (simulador o iPhone) |
+| Simulador recomendado | iPhone 17 o iPhone 17 Pro |
 
+---
 
+## Instalación y configuración
 
-La lógica de la app todavía vive dentro de las vistas. Estas son las responsabilidades que podrían salir de ellas:
+1. Clona el repositorio:
 
-| Vista | Responsabilidad actual | Destino propuesto |
-| :--- | :--- | :--- |
-| `ListaLibrosView` | Lee directamente `Libro.ejemplos` | `ListaLibrosViewModel` / servicio de datos |
-| `FiltroCategoriaView` | Guarda la categoría y calcula el filtrado | `FiltroViewModel` |
-| `BusquedaLibroView` | Texto de búsqueda y resultados | `BusquedaViewModel` |
-| `FavoritosView` | Arma textos derivados y estado vacío | Puede permanecer sin ViewModel |
-| `FavoritosStore` | Guarda favoritos | Capa de repositorio (compartida) |
+```bash
+git clone https://github.com/Jolis-5/AJBooks.git
+```
 
+2. Abre el proyecto en Xcode:
 
+```bash
+open AJBooks/AJBooks.xcodeproj
+```
+
+3. Si Xcode pide descargar la plataforma iOS 26, acepta (*Xcode → Settings → Components*).
+4. **Simulador:** no hace falta configurar nada.
+5. **iPhone físico:** en *Target AJBooks → Signing & Capabilities*, elige tu propio *Team* (el proyecto trae el equipo de la autora) y, si Xcode lo pide, cambia el *Bundle Identifier* (`FCA.AJBooks`) por uno único.
+
+### Archivos de configuración
+
+| Archivo | Para qué sirve |
+| :--- | :--- |
+| `AJBooks.xcodeproj/project.pbxproj` | Targets, versión mínima de iOS (26.5), firma, bundle id y carpetas sincronizadas |
+| `AJBooks/Assets.xcassets` | Ícono de la app y `AccentColor` (vino) |
+| `.gitignore` | Excluye `.DS_Store`, `xcuserdata/`, `DerivedData/` y otros archivos locales |
+
+---
+
+## Ejecución
+
+### Desde Xcode
+1. Elige el esquema **AJBooks**.
+2. Elige un simulador (por ejemplo **iPhone 17**).
+3. Presiona **⌘R**.
+4. Toca **Entrar** en la bienvenida.
+
+### Pruebas
+- En Xcode: **⌘U**.
+- Desde la terminal (en la carpeta del repositorio), solo pruebas unitarias:
+
+```bash
+xcodebuild test -project AJBooks.xcodeproj -scheme AJBooks -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:AJBooksTests
+```
+
+- Prueba de interfaz del recorrido principal:
+
+```bash
+xcodebuild test -project AJBooks.xcodeproj -scheme AJBooks -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:AJBooksUITests/AJBooksUITests/testMainNavigationFlow
+```
+
+Si tu Mac no tiene ese simulador, cambia `name=iPhone 17` por uno de los que aparecen con `xcrun simctl list devices available`.
+
+---
+
+## Configuración de servicios externos
+
+La app usa la API pública de **Open Library** :
+
+| Servicio | URL base |
+| :--- | :--- |
+| Búsqueda y fichas | `https://openlibrary.org` |
+| Portadas | `https://covers.openlibrary.org` |
+
+- **No requiere clave, token, registro ni configuración.** No hay credenciales en el repositorio.
+- Las URL están definidas en `AJBooks/Services/BookService.swift` (`baseURL`) y en `AJBooks/Models/Books.swift` (`coverURL(size:)`).
+- Ambas usan HTTPS, así que no hace falta configurar *App Transport Security*.
+- Open Library pide un uso razonable de su servicio, la app limita cada búsqueda a 20 resultados y espera a que el usuario deje de escribir antes de consultar.
+
+Los detalles de los endpoints y los modelos están en la [documentación técnica](Docs/ARQUITECTURA.md#2-networking).
+
+---
+
+## Documentación
+
+| Documento | Contenido |
+| :--- | :--- |
+| [Docs/ARQUITECTURA.md](Docs/ARQUITECTURA.md) | Arquitectura, networking, persistencia, decisiones técnicas, pruebas y limitaciones conocidas |
+| [Docs/ENTREGA.md](Docs/ENTREGA.md) | Revisión final del repositorio, verificación funcional y evidencias |
+| [Docs/PULL_REQUEST.md](Docs/PULL_REQUEST.md) | Descripción del Pull Request de la entrega final |
+| [Docs/CAMBIOS.md](Docs/CAMBIOS.md) | Registro de cambios por práctica |
+| [Docs/HISTORIAL_PRACTICAS.md](Docs/HISTORIAL_PRACTICAS.md) | Documentación de prácticas anteriores |
+| [Docs/screenshots](Docs/screenshots) | Capturas de la app funcionando |
+
+---
+
+## Integrantes
+
+| Nombre | GitHub |
+| :--- | :--- |
+| Jolette Rivera | [@Jolis-5](https://github.com/Jolis-5) |
+| Abigail Hernández | [@abigail-hernandez](https://github.com/abigail-hernandez) |
+
+---
