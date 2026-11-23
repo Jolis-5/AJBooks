@@ -51,7 +51,7 @@ La app no vende ni presta libros: su propósito es descubrir libros y llevar una
 
 | Tipo | Herramienta |
 | :--- | :--- |
-| Lenguaje | Swift 5 (modo de lenguaje) |
+| Lenguaje | Swift 5 (`SWIFT_VERSION = 5.0` en el proyecto, compilado con Xcode 26.6) |
 | Interfaz | SwiftUI (`NavigationStack`, `TabView`, `Layout` personalizado) |
 | Estado | Framework Observation (`@Observable`, `@State`, `@Environment`) |
 | Persistencia | SwiftData (`@Model`, `ModelContainer`) |
@@ -68,7 +68,7 @@ La app no vende ni presta libros: su propósito es descubrir libros y llevar una
 
 | Requisito | Versión |
 | :--- | :--- |
-| macOS | Uno que pueda ejecutar Xcode 26 |
+| macOS | macOS Tahoe 26 (desarrollado y probado en **macOS 26.6**) |
 | Xcode | 26.0 o superior (probado con **Xcode 26.6**) |
 | iOS de destino | **26.5** o superior (simulador o iPhone) |
 | Simulador recomendado | iPhone 17 o iPhone 17 Pro |
