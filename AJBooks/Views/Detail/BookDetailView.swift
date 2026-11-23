@@ -13,7 +13,7 @@ import SwiftUI
 struct BookDetailView: View {
     let book: Book
     @State private var viewModel: BookDetailViewModel
-    @Environment(FavoritesStore.self) private var favorites
+    @Environment(FavoritesViewModel.self) private var favorites
 
     init(book: Book, viewModel: BookDetailViewModel? = nil) {
         self.book = book
@@ -211,5 +211,5 @@ struct BookDetailView: View {
             )
         )
     }
-    .environment(FavoritesStore.preview)
+    .environment(FavoritesViewModel.preview)
 }

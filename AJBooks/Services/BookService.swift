@@ -70,9 +70,9 @@ struct MockBookService: BookServiceProtocol {
 
 extension BookDTO {
     static let previewExamples: [BookDTO] = [
-        BookDTO(key: "/works/OL1W", title: "Cien años de soledad", authorName: ["Gabriel García Márquez"], firstPublishYear: 1967),
-        BookDTO(key: "/works/OL2W", title: "Orgullo y prejuicio", authorName: ["Jane Austen"], firstPublishYear: 1813),
-        BookDTO(key: "/works/OL3W", title: "Buenos presagios", authorName: ["Terry Pratchett", "Neil Gaiman"], firstPublishYear: 1990),
-        BookDTO(key: "/works/OL4W", title: "Manuscrito anónimo", authorName: nil, firstPublishYear: nil)
+        BookDTO(key: "/works/OL1W", title: "Cien años de soledad", authorName: ["Gabriel García Márquez"], firstPublishYear: 1967, coverI: nil, firstSentence: nil),
+        BookDTO(key: "/works/OL2W", title: "Orgullo y prejuicio", authorName: ["Jane Austen"], firstPublishYear: 1813, coverI: nil, firstSentence: nil),
+        BookDTO(key: "/works/OL3W", title: "Buenos presagios", authorName: ["Terry Pratchett", "Neil Gaiman"], firstPublishYear: 1990, coverI: nil, firstSentence: nil),
+        BookDTO(key: "/works/OL4W", title: "Manuscrito anónimo", authorName: nil, firstPublishYear: nil, coverI: nil, firstSentence: nil)
     ]
 }

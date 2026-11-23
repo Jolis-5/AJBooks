@@ -10,7 +10,7 @@ import SwiftUI
 struct BookCardFavoritesView: View {
     let book: Book
 
-    @Environment(FavoritesStore.self) private var favorites
+    @Environment(FavoritesViewModel.self) private var favorites
 
     var body: some View {
         BookCardView(book: book)
@@ -29,7 +29,7 @@ struct FavoriteButton: View {
     let book: Book
     var compact = false
 
-    @Environment(FavoritesStore.self) private var favorites
+    @Environment(FavoritesViewModel.self) private var favorites
 
     var body: some View {
         let isFavorite = favorites.isFavorite(book)
@@ -57,7 +57,7 @@ struct FavoriteButton: View {
 /// Opción de menú contextual para guardar / eliminar
 struct FavoriteMenuButton: View {
     let book: Book
-    @Environment(FavoritesStore.self) private var favorites
+    @Environment(FavoritesViewModel.self) private var favorites
 
     var body: some View {
         if favorites.isFavorite(book) {
@@ -81,5 +81,5 @@ struct FavoriteMenuButton: View {
         .frame(width: 190)
         .padding()
         .screenBackground()
-        .environment(FavoritesStore.preview)
+        .environment(FavoritesViewModel.preview)
 }

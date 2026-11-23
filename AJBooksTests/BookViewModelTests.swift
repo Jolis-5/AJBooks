@@ -46,8 +46,8 @@ private final class StubAPIClient: APIClientProtocol {
 final class BookViewModelTests: XCTestCase {
 
     private let dtos = [
-        BookDTO(key: "/works/OL1W", title: "Swift Básico", authorName: ["Ana"], firstPublishYear: 2020),
-        BookDTO(key: "/works/OL2W", title: "Swift Avanzado", authorName: ["Luis"], firstPublishYear: 2022)
+        BookDTO(key: "/works/OL1W", title: "Swift Básico", authorName: ["Ana"], firstPublishYear: 2020, coverI: nil, firstSentence: nil),
+        BookDTO(key: "/works/OL2W", title: "Swift Avanzado", authorName: ["Luis"], firstPublishYear: 2022, coverI: nil, firstSentence: nil)
     ]
 
     private let expectedBooks = [
@@ -166,7 +166,7 @@ final class BookServiceTests: XCTestCase {
     func testFetchBooksListBuildsQueryAndReturnsDTOs() async throws {
         // Arrange
         let stub = StubAPIClient()
-        let dto = BookDTO(key: "/works/OL1W", title: "Swift Básico", authorName: ["Ana"], firstPublishYear: 2020)
+        let dto = BookDTO(key: "/works/OL1W", title: "Swift Básico", authorName: ["Ana"], firstPublishYear: 2020, coverI: nil, firstSentence: nil)
         stub.response = BookSearchResponseDTO(docs: [dto])
         let service = BookService(apiClient: stub)
 

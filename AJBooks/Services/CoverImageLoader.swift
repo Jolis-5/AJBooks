@@ -4,14 +4,16 @@
 //
 //  Descarga y guarda en caché las portadas de Open Library.
 //
+//  No es un singleton: AJBooksApp crea UNA instancia y la comparte con las vistas
+//  mediante el Environment (\.coverImageLoader). Así se sabe quién la crea y
+//  en pruebas o Previews se puede usar otra distinta.
 //
 
+import SwiftUI
 import UIKit
 
 @MainActor
 final class CoverImageLoader {
-
-    static let shared = CoverImageLoader()
 
     /// Caché en memoria: la misma portada no se descarga dos veces por sesión
     private let memoryCache = NSCache<NSURL, UIImage>()
@@ -52,6 +54,10 @@ final class CoverImageLoader {
         return image
     }
 
+    /// "nonisolated": la clase trabaja en el hilo principal (@MainActor), pero descargar y
+    /// convertir los bytes en UIImage es trabajo pesado. Al marcar esta función como
+    /// nonisolated se ejecuta fuera del hilo principal y la interfaz no se traba al hacer scroll.
+    /// Por eso es "static" y recibe todo por parámetro: no toca las propiedades de la clase.
     private nonisolated static func download(_ url: URL, session: URLSession, attempts: Int) async throws -> UIImage {
         var lastError: Error = URLError(.unknown)
         for attempt in 1...attempts {
@@ -71,4 +77,11 @@ final class CoverImageLoader {
         }
         throw lastError
     }
+}
+
+// MARK: - Inyección por Environment
+extension EnvironmentValues {
+    /// AJBooksApp inyecta la instancia de la app con .environment(\.coverImageLoader, ...).
+    /// El valor por defecto solo se usa en Previews.
+    @Entry var coverImageLoader = CoverImageLoader()
 }

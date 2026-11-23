@@ -28,3 +28,11 @@
 - **Docs/ENTREGA.md**: revisión del repositorio, pruebas ejecutadas, verificación funcional y versión de entrega.
 - **Docs/screenshots/**: 11 capturas de la app funcionando.
 - **Limpieza**: fuera del repositorio `.DS_Store` y `xcuserdata/`; `.gitignore` ampliado, se eliminó `Docs/README.md`.
+
+## Correcciones de la revisión del profesor
+- **Sin `try!` al crear la base de datos** (`AJBooksApp`): se intenta en disco, luego en memoria y, si ambos fallan, se muestra una pantalla de error en lugar de cerrar la app.
+- **`BookDTO` más simple**: todas las propiedades son `let`, sin valores por defecto; `title` es opcional y se usa el decodificador automático. El único `init(from:)` escrito a mano es el de `FlexibleText`.
+- **Sin singleton en `CoverImageLoader`**: se quitó `shared`; `AJBooksApp` crea la instancia y la inyecta con `.environment(\.coverImageLoader, ...)`.
+- **`FavoritesStore` como servicio**: ya no es `@Observable` ni guarda `errorMessage`; `fetchAll`, `add` y `remove` lanzan errores (`throws`) en lugar de devolver `Bool` con `@discardableResult`, y `fetchSaved` ya no oculta errores con `try?`.
+- **Nuevo `FavoritesViewModel`**: guarda la lista compartida de Mis libros y maneja los errores del servicio.
+- **README**: versión de Swift y de macOS más claras.

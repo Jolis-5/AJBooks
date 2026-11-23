@@ -133,5 +133,5 @@ struct CategoryFilterView: View {
     NavigationStack {
         CategoryFilterView(bookService: MockBookService(booksToReturn: BookDTO.previewExamples))
     }
-    .environment(FavoritesStore.preview)
+    .environment(FavoritesViewModel.preview)
 }

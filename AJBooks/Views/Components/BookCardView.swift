@@ -19,19 +19,9 @@ struct BookCoverView: View {
         case failed
     }
 
-    @State private var phase: Phase
-
-    init(book: Book, size: Book.CoverSize = .medium) {
-        self.book = book
-        self.size = size
-        // Si la portada ya está en caché se muestra de inmediato
-        if let url = book.coverURL(size: size),
-           let cached = CoverImageLoader.shared.cachedImage(for: url) {
-            _phase = State(initialValue: .loaded(cached))
-        } else {
-            _phase = State(initialValue: .loading)
-        }
-    }
+    @State private var phase: Phase = .loading
+    /// Cargador compartido que inyecta AJBooksApp
+    @Environment(\.coverImageLoader) private var coverLoader
 
     var body: some View {
         AppColors.dustyPink.opacity(0.35)
@@ -47,8 +37,16 @@ struct BookCoverView: View {
                             .scaledToFill()
                             .transition(.opacity)
                     case .loading:
-                        ProgressView()
-                            .tint(AppColors.wine)
+                        // Si la portada ya está en caché se muestra de inmediato, sin indicador
+                        if let url = book.coverURL(size: size),
+                           let cached = coverLoader.cachedImage(for: url) {
+                            Image(uiImage: cached)
+                                .resizable()
+                                .scaledToFill()
+                        } else {
+                            ProgressView()
+                                .tint(AppColors.wine)
+                        }
                     case .failed:
                         placeholder(label: "Portada no disponible")
                     }
@@ -77,7 +75,7 @@ struct BookCoverView: View {
         if case .loaded = phase { return }
 
         do {
-            let image = try await CoverImageLoader.shared.image(for: url)
+            let image = try await coverLoader.image(for: url)
             withAnimation(.easeInOut(duration: 0.25)) { phase = .loaded(image) }
         } catch {
             // Una cancelación no es un error real: la vista se fue de pantalla  y al volver se reintenta

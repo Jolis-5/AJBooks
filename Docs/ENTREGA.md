@@ -34,10 +34,11 @@ xcodebuild test -project AJBooks.xcodeproj -scheme AJBooks \
 | `BookDetailTests` | 9 / 9 |
 | `BookServiceTests` | 3 / 3 |
 | `BookModelTests` | 9 / 9 |
-| `FavoritesStoreTests` | 5 / 5 |
+| `FavoritesStoreTests` | 4 / 4 |
+| `FavoritesViewModelTests` | 2 / 2 |
 | `BookSearchTests` | 4 / 4 |
 | `AJBooksUITests.testMainNavigationFlow` | 1 / 1 |
-| **Total** | **43 / 43** |
+| **Total** | **44 / 44** |
 
 ---
 

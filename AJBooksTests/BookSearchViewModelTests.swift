@@ -27,7 +27,7 @@ final class BookSearchViewModelTests: XCTestCase {
 
     private let dtos = [
         BookDTO(key: "/works/OL1W", title: "Cien años de soledad",
-                authorName: ["Gabriel García Márquez"], firstPublishYear: 1967)
+                authorName: ["Gabriel García Márquez"], firstPublishYear: 1967, coverI: nil, firstSentence: nil)
     ]
 
     func testInitialStateIsIdle() {

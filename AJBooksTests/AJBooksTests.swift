@@ -45,6 +45,8 @@ final class BookSearchTests: XCTestCase {
 }
 
 // MARK: - Colección personal (SwiftData)
+
+/// Servicio de persistencia: sus funciones lanzan errores en lugar de devolver Bool
 @MainActor
 final class FavoritesStoreTests: XCTestCase {
 
@@ -62,47 +64,69 @@ final class FavoritesStoreTests: XCTestCase {
     }
 
     // Caso normal
-    func testAddBookSavesItAsFavorite() {
-        let added = store.add(odisea)
+    func testAddBookSavesIt() throws {
+        try store.add(odisea)
 
-        XCTAssertTrue(added)
-        XCTAssertEqual(store.books, [odisea])
-        XCTAssertTrue(store.isFavorite(odisea))
+        XCTAssertEqual(try store.fetchAll(), [odisea])
     }
 
     // Caso límite: el mismo libro dos veces no se duplica
-    func testAddSameBookTwiceDoesNotDuplicate() {
-        store.add(odisea)
-        let addedAgain = store.add(odisea)
+    func testAddSameBookTwiceDoesNotDuplicate() throws {
+        try store.add(odisea)
+        try store.add(odisea)
 
-        XCTAssertFalse(addedAgain)
-        XCTAssertEqual(store.books.count, 1)
+        XCTAssertEqual(try store.fetchAll().count, 1)
     }
 
-    // Entrada inválida: id vacío
-    func testAddBookWithBlankIdIsRejected() {
+    // Entrada inválida: id vacío lanza un error
+    func testAddBookWithBlankIdThrows() throws {
         let invalid = Book(id: "  ", title: "Sin id", author: "Nadie")
 
-        XCTAssertFalse(store.add(invalid))
-        XCTAssertTrue(store.books.isEmpty)
+        XCTAssertThrowsError(try store.add(invalid))
+        XCTAssertTrue(try store.fetchAll().isEmpty)
     }
 
-    // Eliminar: uno existente y uno que no estaba guardado
-    func testRemoveDeletesOnlyTheSavedBook() {
-        store.add(odisea)
-        store.add(paramo)
+    // Eliminar: uno existente y uno que ya no estaba guardado
+    func testRemoveDeletesOnlyTheSavedBook() throws {
+        try store.add(odisea)
+        try store.add(paramo)
 
-        XCTAssertTrue(store.remove(odisea))
-        XCTAssertEqual(store.books, [paramo])
-        XCTAssertFalse(store.remove(odisea))
+        try store.remove(odisea)
+        XCTAssertEqual(try store.fetchAll(), [paramo])
+        XCTAssertNoThrow(try store.remove(odisea))
     }
+}
+
+/// ViewModel de Mis libros: estado compartido y manejo de errores
+@MainActor
+final class FavoritesViewModelTests: XCTestCase {
+
+    private let odisea = Book(id: "odisea", title: "La Odisea", author: "Homero")
 
     // toggle alterna entre guardar y quitar
-    func testToggleAddsAndThenRemoves() {
-        store.toggle(odisea)
-        XCTAssertTrue(store.isFavorite(odisea))
+    func testToggleAddsAndThenRemoves() throws {
+        let viewModel = FavoritesViewModel(store: try FavoritesStore.makeInMemory())
 
-        store.toggle(odisea)
-        XCTAssertFalse(store.isFavorite(odisea))
+        viewModel.toggle(odisea)
+        XCTAssertTrue(viewModel.isFavorite(odisea))
+        XCTAssertEqual(viewModel.books, [odisea])
+
+        viewModel.toggle(odisea)
+        XCTAssertFalse(viewModel.isFavorite(odisea))
+        XCTAssertNil(viewModel.errorMessage)
+    }
+
+    // Si el servicio falla, el ViewModel muestra un mensaje y no agrega el libro
+    func testFailedSaveShowsErrorMessage() throws {
+        let viewModel = FavoritesViewModel(store: try FavoritesStore.makeInMemory())
+        let invalid = Book(id: "", title: "Sin id", author: "Nadie")
+
+        viewModel.add(invalid)
+
+        XCTAssertEqual(viewModel.errorMessage, "No se pudo guardar «Sin id». Intenta de nuevo.")
+        XCTAssertTrue(viewModel.books.isEmpty)
+
+        viewModel.clearError()
+        XCTAssertNil(viewModel.errorMessage)
     }
 }

@@ -212,5 +212,5 @@ struct FlowLayout: Layout {
             debounce: .zero
         ))
     }
-    .environment(FavoritesStore.preview)
+    .environment(FavoritesViewModel.preview)
 }

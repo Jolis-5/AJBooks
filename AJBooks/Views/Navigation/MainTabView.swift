@@ -17,7 +17,7 @@ enum AppTab: Hashable {
 
 struct MainTabView: View {
     @State private var selectedTab: AppTab = .home
-    @Environment(FavoritesStore.self) private var favorites
+    @Environment(FavoritesViewModel.self) private var favorites
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -64,5 +64,5 @@ struct MainTabView: View {
 
 #Preview {
     MainTabView()
-        .environment(FavoritesStore.preview)
+        .environment(FavoritesViewModel.preview)
 }

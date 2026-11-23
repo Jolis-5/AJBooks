@@ -9,13 +9,16 @@ struct BookSearchResponseDTO: Decodable, Sendable {
     let docs: [BookDTO]
 }
 
+/// Copia de cada libro que devuelve search.json.
+/// Todo lo que Open Library puede omitir es opcional; Swift genera el decodificador automáticamente
+/// (decodeIfPresent para los opcionales) y los valores de respaldo se ponen al convertir a Book.
 struct BookDTO: Decodable, Sendable {
     let key: String
-    let title: String
+    let title: String?
     let authorName: [String]?
     let firstPublishYear: Int?
-    var coverI: Int? = nil
-    var firstSentence: FlexibleText? = nil
+    let coverI: Int?
+    let firstSentence: FlexibleText?
 
     enum CodingKeys: String, CodingKey {
         case key
@@ -27,26 +30,14 @@ struct BookDTO: Decodable, Sendable {
     }
 }
 
-extension BookDTO {
-    /// Open Library a veces omite campos
-    /// Si falta el título se usa un texto de respaldo en lugar de descartar toda la respuesta
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        key = try container.decode(String.self, forKey: .key)
-        title = (try? container.decodeIfPresent(String.self, forKey: .title)) ?? "Sin título"
-        authorName = try? container.decodeIfPresent([String].self, forKey: .authorName)
-        firstPublishYear = try? container.decodeIfPresent(Int.self, forKey: .firstPublishYear)
-        coverI = try? container.decodeIfPresent(Int.self, forKey: .coverI)
-        firstSentence = try? container.decodeIfPresent(FlexibleText.self, forKey: .firstSentence)
-    }
-}
-
 /// Respuesta del endpoint
 struct WorkDetailDTO: Decodable, Sendable {
-    var description: FlexibleText? = nil
+    let description: FlexibleText?
 }
 
-/// Open Library entrega algunos textos como String
+/// Open Library entrega algunos textos de tres formas distintas:
+/// "texto", ["texto"] o {"type": "...", "value": "texto"}.
+/// Es el único init(from:) escrito a mano porque el automático solo acepta una forma.
 struct FlexibleText: Decodable, Sendable {
     let text: String?
 
@@ -81,7 +72,7 @@ extension Book {
         let authors = (dto.authorName ?? [])
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
-        let title = dto.title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let title = (dto.title ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
 
         self.init(
             id: dto.key,

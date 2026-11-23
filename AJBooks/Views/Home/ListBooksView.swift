@@ -93,7 +93,7 @@ struct BookListView: View {
             bookService: MockBookService(booksToReturn: BookDTO.previewExamples)
         ))
     }
-    .environment(FavoritesStore.preview)
+    .environment(FavoritesViewModel.preview)
 }
 
 #Preview("Empty") {
@@ -102,7 +102,7 @@ struct BookListView: View {
             bookService: MockBookService(booksToReturn: [])
         ))
     }
-    .environment(FavoritesStore.preview)
+    .environment(FavoritesViewModel.preview)
 }
 
 #Preview("Error") {
@@ -111,5 +111,5 @@ struct BookListView: View {
             bookService: MockBookService(error: APIClient.APIError.httpError(statusCode: 500))
         ))
     }
-    .environment(FavoritesStore.preview)
+    .environment(FavoritesViewModel.preview)
 }

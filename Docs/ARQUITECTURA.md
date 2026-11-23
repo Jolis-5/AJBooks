@@ -18,7 +18,9 @@ La app sigue **MVVM** con una capa de servicios para la red y un *store* para la
 - Las **vistas** solo dibujan un estado y envían acciones, no arman URLs ni hablan con la base de datos.
 - Los **ViewModels** convierten las respuestas de la red en estados de pantalla (`loading`, `loaded`, `empty`, `error`).
 - **BookService** sabe qué endpoints existen, **APIClient** hace la petición HTTP y traduce los errores.
-- **FavoritesStore** es la única pieza que lee y escribe en SwiftData. Se crea una sola vez y se comparte por `@Environment`, así guardar un libro en una pantalla se refleja en todas.
+- **FavoritesStore** es la única pieza que lee y escribe en SwiftData. Es un servicio simple: sus funciones lanzan errores (`throws`) y no guarda estado de pantalla.
+- **FavoritesViewModel** usa ese servicio, guarda la lista de libros y maneja los errores. Se crea una sola vez en `AJBooksApp` y se comparte por `@Environment`, así guardar un libro en una pantalla se refleja en todas.
+- **CoverImageLoader** también se crea una sola vez en `AJBooksApp` y se inyecta por `@Environment` (no es un singleton).
 
 ### Estructura de carpetas
 
@@ -27,7 +29,7 @@ AJBooks/                              ← raíz del repositorio
 ├── AJBooks.xcodeproj
 ├── AJBooks/                          ← código de la app
 │   ├── App/
-│   │   ├── AJBooksApp.swift          Punto de entrada: crea el ModelContainer y el FavoritesStore
+│   │   ├── AJBooksApp.swift          Punto de entrada: crea el ModelContainer, FavoritesViewModel y CoverImageLoader
 │   │   └── RootView.swift            Decide entre la bienvenida y las pestañas
 │   ├── Theme/
 │   │   └── Theme.swift               AppColors, AppFonts y estilos (botones, tarjetas, fondo)
@@ -55,7 +57,8 @@ AJBooks/                              ← raíz del repositorio
 ├── ViewModels/
 │   ├── BookViewModel.swift           Listas de Inicio y Explorar
 │   ├── BookSearchViewModel.swift     Búsqueda
-│   └── BookDetailViewModel.swift     Descripción del detalle
+│   ├── BookDetailViewModel.swift     Descripción del detalle
+│   └── FavoritesViewModel.swift      Estado y errores de Mis libros
 ├── AJBooksTests/                     Pruebas unitarias
 ├── AJBooksUITests/                   Prueba de interfaz del recorrido principal
 └── Docs/                             Documentación y capturas
@@ -67,7 +70,7 @@ AJBooks/                              ← raíz del repositorio
 
 | Componente | Responsabilidad |
 | :--- | :--- |
-| `AJBooksApp` | Crea el `ModelContainer` (si falla usa uno en memoria) y comparte `FavoritesStore` |
+| `AJBooksApp` | Crea el `ModelContainer` sin `try!` (disco → memoria → pantalla de error), y comparte `FavoritesViewModel` y `CoverImageLoader` |
 | `RootView` | Muestra la bienvenida y al tocar *Entrar*, las pestañas |
 | `MainTabView` | Cuatro pestañas, cada una con su propio `NavigationStack`; muestra la alerta si falla un guardado |
 | `BookListView` | Inicio: dibuja los estados de `BookViewModel` y navega al detalle |
@@ -80,8 +83,9 @@ AJBooks/                              ← raíz del repositorio
 | `BookDetailViewModel` | Pide la descripción de la obra, usa el resumen local si no hay |
 | `BookService` | Arma las URL de Open Library y devuelve DTOs |
 | `APIClient` | Hace el GET, valida el código HTTP y decodifica el JSON |
-| `CoverImageLoader` | Descarga portadas una sola vez, las guarda en caché y reintenta |
-| `FavoritesStore` | `add`, `remove`, `toggle`, `isFavorite`, `books` y `errorMessage` |
+| `CoverImageLoader` | Descarga portadas una sola vez, las guarda en caché y reintenta. Se inyecta con `\.coverImageLoader` |
+| `FavoritesStore` | Servicio de SwiftData: `fetchAll()`, `add(_:)` y `remove(_:)`, todas con `throws` |
+| `FavoritesViewModel` | `books`, `isFavorite`, `toggle`, `add`, `remove` y `errorMessage`: atrapa los errores del servicio |
 | `Theme` | Colores, fuentes y estilos para que toda la app se vea igual |
 
 ### Navegación
@@ -191,11 +195,12 @@ Solo los **libros guardados** en *Mis libros*, con el modelo `SavedBook` de Swif
 
 ### Mecanismo
 - **SwiftData** con el almacén por defecto (`default.store` en *Application Support* del contenedor de la app).
-- `AJBooksApp` crea el `ModelContainer`. Si no puede abrirse, usa uno en memoria para que la app no se cierre.
+- `AJBooksApp` crea el `ModelContainer` con `do/catch`: primero en disco; si falla, en memoria; si también falla, muestra una pantalla de error en lugar de cerrarse (no se usa `try!`).
 - `FavoritesStore` usa `mainContext`:
-  - `add` rechaza ids vacíos y duplicados,
+  - `add` lanza `FavoritesError.invalidBook` con ids vacíos y no duplica libros,
   - `remove` busca por id con un `#Predicate`,
-  - después de cada cambio llama a `save()`, si falla, hace `rollback()`, deja un mensaje en `errorMessage` y recarga, así la interfaz siempre coincide con lo guardado.
+  - después de cada cambio llama a `save()`; si falla, hace `rollback()` y **lanza el error**.
+- `FavoritesViewModel` atrapa ese error con `do/catch`, pone un mensaje en `errorMessage` (MainTabView lo muestra en una alerta) y vuelve a leer la lista con `fetchAll()`, así la interfaz siempre coincide con lo guardado.
 - El modelo de la vista (`Book`) es independiente de `SavedBook`: se convierten con `SavedBook(book:)` y `asBook`.
 
 ---

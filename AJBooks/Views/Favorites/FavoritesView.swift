@@ -5,14 +5,14 @@
 //  Created by Jolette Rivera on 27/09/26.
 //
 //  Flujo: Mis libros → libro guardado → detalle.
-//  Lee los libros persistidos con SwiftData a través de FavoritesStore
+//  Lee los libros guardados a través de FavoritesViewModel (que usa FavoritesStore)
 //
 
 import SwiftUI
 
 struct FavoritesView: View {
 
-    @Environment(FavoritesStore.self) private var favorites
+    @Environment(FavoritesViewModel.self) private var favorites
     @State private var selectedBook: Book?
     @State private var filterText = ""
     @State private var bookToDelete: Book?
@@ -148,7 +148,7 @@ struct FavoritesView: View {
 }
 
 #Preview("Con libros") {
-    let store = FavoritesStore.preview
+    let store = FavoritesViewModel.preview
     Book.examples.forEach { store.add($0) }
     return NavigationStack {
         FavoritesView()
@@ -160,5 +160,5 @@ struct FavoritesView: View {
     NavigationStack {
         FavoritesView(onExplore: {})
     }
-    .environment(FavoritesStore.preview)
+    .environment(FavoritesViewModel.preview)
 }

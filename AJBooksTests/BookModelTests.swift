@@ -15,7 +15,7 @@ final class BookModelTests: XCTestCase {
 
     func testDTOMapsAllAuthorsAndYear() {
         let dto = BookDTO(key: "/works/OL3W", title: "Buenos presagios",
-                          authorName: ["Terry Pratchett", "Neil Gaiman"], firstPublishYear: 1990)
+                          authorName: ["Terry Pratchett", "Neil Gaiman"], firstPublishYear: 1990, coverI: nil, firstSentence: nil)
 
         let book = Book(from: dto)
 
@@ -37,7 +37,7 @@ final class BookModelTests: XCTestCase {
 
     // Caso límite: autores vacíos o con espacios
     func testBlankAuthorsUseFallback() {
-        let dto = BookDTO(key: "/works/OL7W", title: "T", authorName: ["  "], firstPublishYear: nil)
+        let dto = BookDTO(key: "/works/OL7W", title: "T", authorName: ["  "], firstPublishYear: nil, coverI: nil, firstSentence: nil)
 
         let book = Book(from: dto)
 
@@ -88,11 +88,11 @@ final class BookModelTests: XCTestCase {
         let first = Book(id: "a", title: "A", author: "X", authors: ["X", "Y"], firstPublishYear: 1999)
         let second = Book(id: "b", title: "B", author: "Z")
 
-        store.add(first)
-        store.add(second)
+        try store.add(first)
+        try store.add(second)
 
-        XCTAssertEqual(store.books.map(\.id), ["b", "a"])
-        XCTAssertEqual(store.books.last, first)
-        XCTAssertNil(store.errorMessage)
+        let books = try store.fetchAll()
+        XCTAssertEqual(books.map(\.id), ["b", "a"])
+        XCTAssertEqual(books.last, first)
     }
 }

@@ -49,5 +49,5 @@ struct BookRowView: View {
     }
     .padding()
     .screenBackground()
-    .environment(FavoritesStore.preview)
+    .environment(FavoritesViewModel.preview)
 }
